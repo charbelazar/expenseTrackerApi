@@ -19,7 +19,7 @@ namespace expenseTrackerApi.Classes
         }
 
 
-        public async Task<SalesPerMonth> GetMonthWithMostSales(int year)
+        public async Task<SalesPerMonth> GetMonthWithMostSales(int year, int wallet_id)
         {
             using(SqlConnection cnsql = new SqlConnection(connectionstring))
             {
@@ -27,15 +27,15 @@ namespace expenseTrackerApi.Classes
                 string query = "SELECT DATENAME(MONTH, TransactionDate) as  MonthName \r\n\t," +
                                                                                   "ISNULL(SUM(Transactions.Amount), 0) AS TotalSales" +
                                                                         "\r\nFROM [Transactions]" +
-                                                                           " where year(TransactionDate) = @FilterYear and IsExpense = 1  " +
+                                                                           " where year(TransactionDate) = @FilterYear and wallet_id = @Wallet_Id and IsExpense = 1  " +
                                                                            "\r\nGROUP BY DATENAME(MONTH, TransactionDate)\r\n" +
                                                                            "HAVING ISNULL(SUM(Transactions.Amount), 0) = (\r\n\t\tSELECT MAX(AMOUNT)\r\n\t\tFROM (\r\n\t\t\tSELECT MAX(AMOUNT) AS AMOUNT\r\n\t\t\tFROM Transactions\r\n\t\t\tGROUP BY DATENAME(MONTH, TransactionDate)\r\n\t\t\t) T\r\n\t\t)";
-                return await cnsql.QueryFirstOrDefaultAsync<SalesPerMonth>(query, new { FilterYear = year});
+                return await cnsql.QueryFirstOrDefaultAsync<SalesPerMonth>(query, new { FilterYear = year, Wallet_Id = wallet_id});
             }
         }
 
 
-        public async Task<IEnumerable<SalesPerMonth>> GetSalesPerMonthAsync(int year)
+        public async Task<IEnumerable<SalesPerMonth>> GetSalesPerMonthAsync(int year, int wallet_id )
         {
             using(SqlConnection cnsql = new SqlConnection(connectionstring))
             {
@@ -55,9 +55,12 @@ namespace expenseTrackerApi.Classes
                       "SELECT 11, 'November' UNION ALL\r\n" +
                     "  SELECT 12, 'December'\r\n)\r\n" +
                       "SELECT\r\n  Months.MonthName as MonthName,\r\n  ISNULL(SUM(Transactions.Amount), 0) AS TotalSales\r\n" +
-                      "FROM Months\r\nLEFT JOIN [ExpenseTracker].[dbo].[Transactions]\r\nON Months.MonthNum = MONTH(Transactions.TransactionDate) AND \r\n YEAR(Transactions.TransactionDate) = @FilterYear and IsExpense = 1 \r\nGROUP BY Months.MonthNum, Months.MonthName\r\nORDER BY Months.MonthNum";
+                      "FROM Months\r\nLEFT JOIN [ExpenseTracker].[dbo].[Transactions]\r\nON Months.MonthNum = MONTH(Transactions.TransactionDate) AND" +
+                      " \r\n YEAR(Transactions.TransactionDate) = @FilterYear and IsExpense = 1 and wallet_id = @Wallet_Id" +
+                      " \r\nGROUP BY Months.MonthNum," +
+                      " Months.MonthName\r\nORDER BY Months.MonthNum";
 
-                return await cnsql.QueryAsync<SalesPerMonth>(query, new { FilterYear = year });
+                return await cnsql.QueryAsync<SalesPerMonth>(query, new { FilterYear = year , Wallet_Id = wallet_id });
             }
         }
     }

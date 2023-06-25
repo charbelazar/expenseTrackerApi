@@ -4,7 +4,7 @@ namespace expenseTrackerApi.Repositories
 {
     public interface IReportingRepo
     {
-        public Task<IEnumerable<SalesPerMonth>> GetSalesPerMonthAsync(int year);
-        public Task<SalesPerMonth> GetMonthWithMostSales(int year);
+        public Task<IEnumerable<SalesPerMonth>> GetSalesPerMonthAsync(int year , int wallet_id);
+        public Task<SalesPerMonth> GetMonthWithMostSales(int year, int wallet_id);
     }
 }
